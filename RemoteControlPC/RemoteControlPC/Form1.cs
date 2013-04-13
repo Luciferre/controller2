@@ -87,8 +87,10 @@ namespace RemoteControlPC
                 {
                     threadExe = new Thread(new ThreadStart((pcthread = new RemoteControlPC.CommandThread(IPBox.Text.ToString().Trim(), pcport, this)).Handle));
                     threadExe.Start();
+                    threadExe.IsBackground = true;
                     threadSender = new Thread(new ThreadStart((scthread = new RemoteControlPC.ScThread(IPBox.Text.ToString().Trim(), scport, this)).Handle));
                     threadSender.Start();
+                    threadSender.IsBackground = true;
                     connected = true;
                 }
             }
@@ -97,7 +99,33 @@ namespace RemoteControlPC
                 System.Windows.Forms.MessageBox.Show(ex.Message.ToString());
             }
         }
-
+        private void exit_Click(object sender, EventArgs e)
+        {
+            exitApp();
+        }
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            exitApp();
+        }
+        private void exitApp()
+        {
+            if (pcthread != null)
+            {
+                threadExe.Abort();
+                threadExe = null;
+                pcthread.Abort();
+                pcthread = null;
+            }
+            if (scthread != null)
+            {
+                threadSender.Abort();
+                threadSender = null;
+                scthread.Abort();
+                scthread = null;
+            }
+            Process.GetCurrentProcess().Kill();
+            this.Close();
+        }
         delegate void ShowMessageHandler(string message);
         public void showmessage(String message)
         {
